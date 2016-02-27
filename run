@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-go run user.go ful.go
+go run helpers.go actions.go user.go ful.go
