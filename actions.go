@@ -31,7 +31,7 @@ func UserShow(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Pa
 			w.WriteHeader(404)
 		} else if user.Role == "admin" {
 			w.WriteHeader(401)
-			SendJSON(w, JsonError{404, "not found"})
+			SendJSON(w, JsonError{401, "unauthorized"})
 		} else {
 			SendJSON(w, user)
 		}
