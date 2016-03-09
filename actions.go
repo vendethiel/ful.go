@@ -122,6 +122,15 @@ func UserUpdate(db *sql.DB) authHandler {
 			SendError(w, err)
 			return
 		}
+		if user.Role == "normal" || user.Role == "admin" {
+			if u.Role == "admin" {
+				UpdateUserColumn(db, id, "role", user.Role)
+			} else {
+        // non-admin can't update other users' roles
+        w.WriteHeader(401)
+        return
+      }
+		}
 		if user.Lastname != "" {
 			UpdateUserColumn(db, id, "lastname", user.Lastname)
 		}
@@ -133,12 +142,6 @@ func UserUpdate(db *sql.DB) authHandler {
 		}
 		if user.Password != "" {
 			UpdateUserColumn(db, id, "password", user.Password)
-		}
-		if user.Role == "normal" || user.Role == "admin" {
-			// non-admin can't update other users' roles
-			if u.Role == "admin" {
-				UpdateUserColumn(db, id, "role", user.Role)
-			}
 		}
 	}
 }
