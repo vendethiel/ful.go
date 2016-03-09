@@ -12,29 +12,36 @@ import (
 )
 
 type authHandler func(*User, http.ResponseWriter, *http.Request, httprouter.Params)
+type httpCode int
+
+func parseAuthHeader(authHeader []string) ([]string, httpCode) {
+  // validate we have the header... (not present: unauthorized)
+  if len(authHeader) == 0 {
+    return nil, 401
+  }
+  // validate the header's shape... (bad shape: bad request)
+  auth := strings.SplitN(authHeader[0], " ", 2)
+  if len(auth) != 2 || auth[0] != "Basic" {
+    return nil, 400
+  }
+
+  // parse the header... validate the size (bad shape: bad request)
+  payload, _ := base64.StdEncoding.DecodeString(auth[1])
+  pair := strings.SplitN(string(payload), ":", 2)
+  if len(pair) != 2 {
+    return nil, 400
+  }
+  return pair, 200
+}
 
 func Authenticate(db *sql.DB, action authHandler) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		// validate we have the header...
-		authHeader := r.Header["Authorization"]
-		if len(authHeader) == 0 {
-			w.WriteHeader(401)
-			return
-		}
-		// validate the header's shape...
-		auth := strings.SplitN(authHeader[0], " ", 2)
-		if len(auth) != 2 || auth[0] != "Basic" {
-			w.WriteHeader(400)
-			return
-		}
+    pair, errCode := parseAuthHeader(r.Header["Authorization"])
+    if errCode != 200 {
+      w.WriteHeader(int(errCode))
+      return
+    }
 
-		// parse the header... validate the size
-		payload, _ := base64.StdEncoding.DecodeString(auth[1])
-		pair := strings.SplitN(string(payload), ":", 2)
-		if len(pair) != 2 {
-			w.WriteHeader(400)
-			return
-		}
 		// validate the user
 		user, err := GetUserBy(db, "email", pair[0])
 		if err != nil || user.Password != pair[1] {
