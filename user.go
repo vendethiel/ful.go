@@ -1,8 +1,8 @@
 package main
 
 import (
-  "fmt"
 	"database/sql"
+	"fmt"
 )
 
 type User struct {
@@ -54,7 +54,7 @@ func UpdateUserColumn(db *sql.DB, id, column, value string) error {
 }
 
 func DeleteUser(db *sql.DB, id string) error {
-  sql := "DELETE FROM user WHERE id = ?"
-  _, err := db.Exec(sql, id)
-  return err
+	sql := "DELETE FROM user WHERE id = ?"
+	_, err := db.Exec(sql, id)
+	return err
 }

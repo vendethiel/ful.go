@@ -24,6 +24,6 @@ func SendJSON(w http.ResponseWriter, o interface{}) error {
 }
 
 func SendError(w http.ResponseWriter, err error) {
-  w.WriteHeader(400)                       // invalid request
+	w.WriteHeader(400)                       // invalid request
 	SendJSON(w, JsonError{400, err.Error()}) // XXX check error here?
 }

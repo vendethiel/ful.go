@@ -2,11 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
-  "strings"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -15,36 +15,36 @@ type authHandler func(*User, http.ResponseWriter, *http.Request, httprouter.Para
 
 func Authenticate(db *sql.DB, action authHandler) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    // validate we have the header...
-    authHeader := r.Header["Authorization"]
-    if len(authHeader) == 0 {
-      w.WriteHeader(401)
-      return
-    }
-    // validate the header's shape...
-    auth := strings.SplitN(authHeader[0], " ", 2)
-    if len(auth) != 2 || auth[0] != "Basic" {
-      w.WriteHeader(400)
-      return
-    }
+		// validate we have the header...
+		authHeader := r.Header["Authorization"]
+		if len(authHeader) == 0 {
+			w.WriteHeader(401)
+			return
+		}
+		// validate the header's shape...
+		auth := strings.SplitN(authHeader[0], " ", 2)
+		if len(auth) != 2 || auth[0] != "Basic" {
+			w.WriteHeader(400)
+			return
+		}
 
-    // parse the header... validate the size
-    payload, _ := base64.StdEncoding.DecodeString(auth[1])
-    pair := strings.SplitN(string(payload), ":", 2)
-    if len(pair) != 2  {
-      w.WriteHeader(400)
-      return
-    }
-    // validate the user
-    user, err := GetUserBy(db, "email", pair[0])
-    if err != nil || user.Password != pair[1] {
-      w.WriteHeader(401)
-      return
-    }
+		// parse the header... validate the size
+		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+		pair := strings.SplitN(string(payload), ":", 2)
+		if len(pair) != 2 {
+			w.WriteHeader(400)
+			return
+		}
+		// validate the user
+		user, err := GetUserBy(db, "email", pair[0])
+		if err != nil || user.Password != pair[1] {
+			w.WriteHeader(401)
+			return
+		}
 
-    // call the action with the authentified user
-    action(&user, w, r, p)
-  }
+		// call the action with the authentified user
+		action(&user, w, r, p)
+	}
 }
 
 func parseUser(r *http.Request) (User, error) {
@@ -98,10 +98,10 @@ func UserCreate(db *sql.DB) authHandler {
 			SendError(w, err)
 			return
 		}
-    // only two roles allowed: normal and admin
-    // also prevent non-admins from creating admin users
+		// only two roles allowed: normal and admin
+		// also prevent non-admins from creating admin users
 		if (user.Role != "normal" && user.Role != "admin") ||
-       u.Role != "admin" {
+			u.Role != "admin" {
 			user.Role = "normal"
 		}
 		newUser, err := InsertUser(db, user)
@@ -121,33 +121,33 @@ func UserUpdate(db *sql.DB) authHandler {
 		if err != nil {
 			SendError(w, err)
 			return
-    }
-    if user.Lastname != "" {
-      UpdateUserColumn(db, id, "lastname", user.Lastname)
-    }
-    if user.Firstname != "" {
-      UpdateUserColumn(db, id, "firstname", user.Firstname)
-    }
-    if user.Email != "" {
-      UpdateUserColumn(db, id, "email", user.Email)
-    }
-    if user.Password != "" {
-      UpdateUserColumn(db, id, "password", user.Password)
-    }
-    if user.Role == "normal" || user.Role == "admin" {
-      // non-admin can't update other users' roles
-      if u.Role == "admin" {
-        UpdateUserColumn(db, id, "role", user.Role)
-      }
-    }
+		}
+		if user.Lastname != "" {
+			UpdateUserColumn(db, id, "lastname", user.Lastname)
+		}
+		if user.Firstname != "" {
+			UpdateUserColumn(db, id, "firstname", user.Firstname)
+		}
+		if user.Email != "" {
+			UpdateUserColumn(db, id, "email", user.Email)
+		}
+		if user.Password != "" {
+			UpdateUserColumn(db, id, "password", user.Password)
+		}
+		if user.Role == "normal" || user.Role == "admin" {
+			// non-admin can't update other users' roles
+			if u.Role == "admin" {
+				UpdateUserColumn(db, id, "role", user.Role)
+			}
+		}
 	}
 }
 
 func UserRemove(db *sql.DB) authHandler {
 	return func(u *User, w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    if err := DeleteUser(db, p.ByName("id")); err != nil {
-      SendError(w, err)
-      return
-    }
-  }
+		if err := DeleteUser(db, p.ByName("id")); err != nil {
+			SendError(w, err)
+			return
+		}
+	}
 }
