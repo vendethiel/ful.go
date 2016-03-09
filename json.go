@@ -1,5 +1,9 @@
 package main
 
+/**
+ * JSON-related helpers
+ */
+
 import (
 	"encoding/json"
 	"net/http"

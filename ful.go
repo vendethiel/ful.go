@@ -1,5 +1,9 @@
 package main
 
+/**
+ * main program, does the wiring up
+ */
+
 import (
 	"database/sql"
 	"log"

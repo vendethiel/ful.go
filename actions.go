@@ -1,70 +1,17 @@
 package main
 
+/**
+ * http user actions
+ */
+
 import (
-	"database/sql"
-	"encoding/base64"
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
-	"strings"
+	"database/sql"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 type authHandler func(*User, http.ResponseWriter, *http.Request, httprouter.Params)
-type httpCode int
-
-func parseAuthHeader(authHeader []string) ([]string, httpCode) {
-  // validate we have the header... (not present: unauthorized)
-  if len(authHeader) == 0 {
-    return nil, 401
-  }
-  // validate the header's shape... (bad shape: bad request)
-  auth := strings.SplitN(authHeader[0], " ", 2)
-  if len(auth) != 2 || auth[0] != "Basic" {
-    return nil, 400
-  }
-
-  // parse the header... validate the size (bad shape: bad request)
-  payload, _ := base64.StdEncoding.DecodeString(auth[1])
-  pair := strings.SplitN(string(payload), ":", 2)
-  if len(pair) != 2 {
-    return nil, 400
-  }
-  return pair, 200
-}
-
-func Authenticate(db *sql.DB, action authHandler) func(http.ResponseWriter, *http.Request, httprouter.Params) {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    pair, errCode := parseAuthHeader(r.Header["Authorization"])
-    if errCode != 200 {
-      w.WriteHeader(int(errCode))
-      return
-    }
-
-		// validate the user
-		user, err := GetUserBy(db, "email", pair[0])
-		if err != nil || user.Password != pair[1] {
-			w.WriteHeader(401)
-			return
-		}
-
-		// call the action with the authentified user
-		action(&user, w, r, p)
-	}
-}
-
-func parseUser(r *http.Request) (User, error) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return User{}, err
-	}
-	var user User
-	if err := json.Unmarshal(body, &user); err != nil {
-		return User{}, err
-	}
-	return user, err
-}
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
@@ -105,12 +52,7 @@ func UserCreate(db *sql.DB) authHandler {
 			SendError(w, err)
 			return
 		}
-		// only two roles allowed: normal and admin
-		// also prevent non-admins from creating admin users
-		if (user.Role != "normal" && user.Role != "admin") ||
-			u.Role != "admin" {
-			user.Role = "normal"
-		}
+    user.Role = validateUserRole(user.Role, u)
 		newUser, err := InsertUser(db, user)
 		if err != nil {
 			SendError(w, err)

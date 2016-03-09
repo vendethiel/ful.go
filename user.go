@@ -1,5 +1,9 @@
 package main
 
+/**
+ * DB-related query functions
+ */
+
 import (
 	"database/sql"
 	"fmt"
@@ -57,4 +61,14 @@ func DeleteUser(db *sql.DB, id string) error {
 	sql := "DELETE FROM user WHERE id = ?"
 	_, err := db.Exec(sql, id)
 	return err
+}
+
+func validateUserRole(role string, authUser *User) string {
+  if authUser.Role != "admin" {
+    return "normal"
+  }
+  if role == "normal" || role == "admin" {
+    return role
+  }
+  return "normal"
 }
