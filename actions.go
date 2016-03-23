@@ -71,6 +71,11 @@ func UserUpdate(db *sql.DB) authHandler {
 			SendError(w, err)
 			return
 		}
+    if updateUser, err := GetUserBy(db, "id", id); err != nil || updateUser.Id == 0 {
+      // no such user
+      w.WriteHeader(404)
+      return
+    }
 		if user.Role == "normal" || user.Role == "admin" {
 			if u.Role == "admin" {
 				UpdateUserColumn(db, id, "role", user.Role)

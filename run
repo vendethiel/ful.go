@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-go run json.go actions.go user.go ful.go httpauth.go request.go
+go run json.go actions.go user.go httpauth.go ful.go request.go
