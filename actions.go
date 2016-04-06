@@ -59,12 +59,14 @@ func UserCreate(db *sql.DB) authHandler {
 			return
 		}
 		MarkAsJSON(w)
+    w.WriteHeader(201)
 		SendJSON(w, newUser)
 	}
 }
 
 func UserUpdate(db *sql.DB) authHandler {
 	return func(u *User, w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+    MarkAsJSON(w)
 		id := p.ByName("id")
 		user, err := parseUser(r)
 		if err != nil {
@@ -97,6 +99,7 @@ func UserUpdate(db *sql.DB) authHandler {
 		if user.Password != "" {
 			UpdateUserColumn(db, id, "password", user.Password)
 		}
+    w.WriteHeader(204)
 	}
 }
 
