@@ -5,20 +5,20 @@ package main
  */
 
 import (
-	"encoding/json"
 	"database/sql"
-	"io/ioutil"
-  "net/http"
+	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"io/ioutil"
+	"net/http"
 )
 
 func Authenticate(db *sql.DB, action authHandler) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    basicUser, errCode := parseAuthHeader(r.Header["Authorization"])
-    if errCode != 200 {
-      w.WriteHeader(int(errCode))
-      return
-    }
+		basicUser, errCode := parseAuthHeader(r.Header["Authorization"])
+		if errCode != 200 {
+			w.WriteHeader(int(errCode))
+			return
+		}
 
 		user, err := GetUserBy(db, "email", basicUser.Username)
 		if err != nil || user.Password != basicUser.Password {

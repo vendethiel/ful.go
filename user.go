@@ -64,11 +64,11 @@ func DeleteUser(db *sql.DB, id string) error {
 }
 
 func validateUserRole(role string, authUser *User) string {
-  if authUser.Role != "admin" {
-    return "normal"
-  }
-  if role == "normal" || role == "admin" {
-    return role
-  }
-  return "normal"
+	if authUser.Role != "admin" {
+		return "normal"
+	}
+	if role == "normal" || role == "admin" {
+		return role
+	}
+	return "normal"
 }

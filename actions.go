@@ -5,8 +5,8 @@ package main
  */
 
 import (
-	"net/http"
 	"database/sql"
+	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -52,40 +52,40 @@ func UserCreate(db *sql.DB) authHandler {
 			SendError(w, err)
 			return
 		}
-    user.Role = validateUserRole(user.Role, u)
+		user.Role = validateUserRole(user.Role, u)
 		newUser, err := InsertUser(db, user)
 		if err != nil {
 			SendError(w, err)
 			return
 		}
 		MarkAsJSON(w)
-    w.WriteHeader(201)
+		w.WriteHeader(201)
 		SendJSON(w, newUser)
 	}
 }
 
 func UserUpdate(db *sql.DB) authHandler {
 	return func(u *User, w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    MarkAsJSON(w)
+		MarkAsJSON(w)
 		id := p.ByName("id")
 		user, err := parseUser(r)
 		if err != nil {
 			SendError(w, err)
 			return
 		}
-    if updateUser, err := GetUserBy(db, "id", id); err != nil || updateUser.Id == 0 {
-      // no such user
-      w.WriteHeader(404)
-      return
-    }
+		if updateUser, err := GetUserBy(db, "id", id); err != nil || updateUser.Id == 0 {
+			// no such user
+			w.WriteHeader(404)
+			return
+		}
 		if user.Role == "normal" || user.Role == "admin" {
 			if u.Role == "admin" {
 				UpdateUserColumn(db, id, "role", user.Role)
 			} else {
-        // non-admin can't update other users' roles
-        w.WriteHeader(401)
-        return
-      }
+				// non-admin can't update other users' roles
+				w.WriteHeader(401)
+				return
+			}
 		}
 		if user.Lastname != "" {
 			UpdateUserColumn(db, id, "lastname", user.Lastname)
@@ -99,7 +99,7 @@ func UserUpdate(db *sql.DB) authHandler {
 		if user.Password != "" {
 			UpdateUserColumn(db, id, "password", user.Password)
 		}
-    w.WriteHeader(204)
+		w.WriteHeader(204)
 	}
 }
 
